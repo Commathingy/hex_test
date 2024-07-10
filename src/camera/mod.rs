@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use bevy::{math::{Vec3, Vec2, Vec3Swizzles, Vec2Swizzles}, transform::components::{GlobalTransform, Transform}, ecs::{system::{Query, Res, Commands}, query::With, component::Component, entity::Entity}, render::camera::Camera, input::{Input, keyboard::KeyCode}, pbr::{PointLightBundle, PointLight}, time::{Timer, Virtual, Time, TimerMode}, core_pipeline::core_3d::Camera3dBundle, app::{Plugin, Startup, Update}};
+use bevy::{math::{Vec3, Vec2, Vec3Swizzles, Vec2Swizzles}, transform::components::{GlobalTransform, Transform}, ecs::{system::{Query, Res, Commands}, query::With, component::Component, entity::Entity}, render::camera::Camera, input::{ButtonInput, keyboard::KeyCode}, pbr::{PointLightBundle, PointLight}, time::{Timer, Virtual, Time, TimerMode}, core_pipeline::core_3d::Camera3dBundle, app::{Plugin, Startup, Update}};
 use bevy_mod_raycast::deferred::RaycastSource;
 
 use crate::AddIfMissing;
@@ -72,7 +72,7 @@ impl CameraRotator{
 
 
     fn current_delta(&self) -> f32 {
-        self.total_rotation * self.timer.percent() - self.current_rotation
+        self.total_rotation * self.timer.fraction() - self.current_rotation
     }
 }
 
@@ -124,7 +124,7 @@ fn spawn_camera(
 fn camera_move(
     mut commands: Commands,
     mut camera_ent: Query<(Entity, &mut CameraFocus, &mut Transform), With<Camera>>,
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
     time: Res<Time<Virtual>>
 ) {
     let (ent, mut focus, mut transform) = camera_ent.single_mut();
@@ -133,28 +133,28 @@ fn camera_move(
     let forward = transform.forward().reject_from_normalized(Vec3::Y);
     let left = transform.left().reject_from_normalized(Vec3::Y);
 
-    if input.pressed(KeyCode::W){
+    if input.pressed(KeyCode::KeyW){
         focus.location += movement_dist * forward;
         transform.translation += movement_dist * forward;
     }
-    if input.pressed(KeyCode::S){
+    if input.pressed(KeyCode::KeyS){
         focus.location += -movement_dist * forward;
         transform.translation += -movement_dist * forward;
     }
-    if input.pressed(KeyCode::A){
+    if input.pressed(KeyCode::KeyA){
         focus.location += movement_dist * left;
         transform.translation += movement_dist * left;
     }
-    if input.pressed(KeyCode::D){
+    if input.pressed(KeyCode::KeyD){
         focus.location += -movement_dist * left;
         transform.translation += -movement_dist * left;
     }
 
-    if input.pressed(KeyCode::Q){
+    if input.pressed(KeyCode::KeyQ){
         commands.entity(ent).add(AddIfMissing{component: CameraRotator::new(0.25 * PI, 1.0)});
     }
 
-    if input.pressed(KeyCode::E){
+    if input.pressed(KeyCode::KeyE){
         commands.entity(ent).add(AddIfMissing{component: CameraRotator::new(-0.25 * PI, 1.0)});
     }
 }

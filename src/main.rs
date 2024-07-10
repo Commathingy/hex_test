@@ -33,6 +33,7 @@ fn main() {
 
 
 
+
 struct AddIfMissing<T: Component>{
     component: T,
 }
@@ -59,7 +60,7 @@ impl<T: Component> EntityCommand for AddIfMissing<T>{
 
 fn test_move(
     mut current_pos: Local<(i32, i32)>,
-    input: Res<Input<MouseButton>>,
+    input: Res<ButtonInput<MouseButton>>,
     mut writer: EventWriter<PlayerMovedEvent>,
     raycast: Query<&RaycastSource<()>>,
     meshes: Query<&Parent, With<Handle<Mesh>>>,

@@ -1,26 +1,13 @@
 use std::time::Duration;
 
 use bevy::{
-    render::{
-        render_resource::{
-            ShaderRef, 
-            AsBindGroup, 
-            RenderPipelineDescriptor, 
-            SpecializedMeshPipelineError, 
-            PolygonMode
-        }, 
-        color::Color, 
-        mesh::MeshVertexBufferLayout
-    }, 
-    pbr::{
-        Material, 
-        MaterialPipeline, 
-        MaterialPipelineKey, 
-        StandardMaterial, 
-        MaterialPlugin
-    }, 
-    asset::{Asset, Handle, Assets}, 
-    reflect::TypePath, app::{Plugin, Update}, ecs::{system::{ResMut, Query, Res}, component::Component}, time::{self, Timer, Time, Virtual}
+    app::{Plugin, Update}, asset::{Asset, Assets, Handle}, color::{Color, LinearRgba, Mix}, ecs::{component::Component, system::{Query, Res, ResMut}}, pbr::{
+        Material, MaterialPipeline, MaterialPipelineKey, MaterialPlugin, StandardMaterial
+    }, reflect::TypePath, render::{
+        mesh::MeshVertexBufferLayoutRef, render_resource::{
+            AsBindGroup, PolygonMode, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError
+        }
+    }, time::{self, Time, Timer, Virtual}
 };
 
 
@@ -44,7 +31,7 @@ fn update_colour_transitions(
 
     for (handle, mut transition) in handles.iter_mut(){
         //update the colours
-        match materials.get_mut(handle.clone()){
+        match materials.get_mut(handle.id()){
             Some(material) => material.base_color = transition.get_interpolated_colour(),
             None => continue,
         }
@@ -54,17 +41,10 @@ fn update_colour_transitions(
 }
 
 
-pub enum ColourSpace{
-    RGB,
-    RGBLinear,
-    HSL,
-    LCH
-}
 
 
 #[derive(Component)]
 pub struct ColourTransition{
-    interpolation_type: ColourSpace,
     start_colour: Color,
     end_colour: Color,
     timer: Timer
@@ -72,10 +52,9 @@ pub struct ColourTransition{
 
 impl Default for ColourTransition{
     fn default() -> Self {
-        Self {
-            interpolation_type: ColourSpace::RGB, 
-            start_colour: Color::GRAY, 
-            end_colour: Color::GREEN, 
+        Self { 
+            start_colour: Color::linear_rgba(0.5, 0.5, 0.5, 1.0), //Grey
+            end_colour: Color::linear_rgba(0.0, 1.0, 0.0, 1.0), //green
             timer: Timer::from_seconds(2.0, time::TimerMode::Once) 
         }
     }
@@ -85,7 +64,6 @@ impl ColourTransition{
 
     pub fn new(start_col: Color, end_col: Color, secs: f32) -> Self {
         Self {
-            interpolation_type: ColourSpace::RGB, 
             start_colour: start_col, 
             end_colour: end_col, 
             timer: Timer::from_seconds(secs, time::TimerMode::Once) 
@@ -96,24 +74,8 @@ impl ColourTransition{
         self.timer.tick(delta);
     }
 
-    fn get_interpolated_colour(&self) -> Color {
-        let (start, end) = match self.interpolation_type{
-            ColourSpace::RGB => (self.start_colour.as_rgba_f32(), self.end_colour.as_rgba_f32()),
-            ColourSpace::RGBLinear => (self.start_colour.as_linear_rgba_f32(), self.end_colour.as_linear_rgba_f32()),
-            ColourSpace::HSL => (self.start_colour.as_hsla_f32(), self.end_colour.as_hsla_f32()),
-            ColourSpace::LCH => (self.start_colour.as_lcha_f32(), self.end_colour.as_lcha_f32()),
-        };
-        let ratio = self.timer.percent();
-        let mut fv: [f32; 4] = [0.0; 4];
-        for i in 0..4 {
-            fv[i] = start[i] + (end[i]-start[i]) * ratio;
-        }
-        match self.interpolation_type{
-            ColourSpace::RGB => Color::rgba(fv[0], fv[1], fv[2], fv[3]),
-            ColourSpace::RGBLinear => Color::rgba_linear(fv[0], fv[1], fv[2], fv[3]),
-            ColourSpace::HSL => Color::hsla(fv[0], fv[1], fv[2], fv[3]),
-            ColourSpace::LCH => Color::lcha(fv[0], fv[1], fv[2], fv[3]),
-        }
+    pub fn get_interpolated_colour(&self) -> Color {
+        self.start_colour.mix(&self.end_colour, self.timer.fraction())
     }
 }
 
@@ -122,21 +84,22 @@ impl ColourTransition{
 #[derive(AsBindGroup, Debug, Clone, Asset, TypePath)]
 pub struct OutlineMaterial{
     #[uniform(0)]
-    pub outline_colour: Color,
+    pub outline_colour: LinearRgba,
 }
 
 impl Material for OutlineMaterial{
     fn fragment_shader() -> ShaderRef{
         "shaders/outline_material.wgsl".into()
     }
-
+    
     fn depth_bias(&self) -> f32 {
         1.0
     }
+
     fn specialize(
         _pipeline: &MaterialPipeline<Self>,
         descriptor: &mut RenderPipelineDescriptor,
-        _layout: &MeshVertexBufferLayout,
+        _layout: &MeshVertexBufferLayoutRef,
         _key: MaterialPipelineKey<Self>,
     ) -> Result<(), SpecializedMeshPipelineError> {
         descriptor.primitive.polygon_mode = PolygonMode::Line;

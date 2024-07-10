@@ -1,6 +1,6 @@
 mod hex_tile;
 
-use bevy::{app::{Plugin, Update}, render::color::Color, ecs::{system::{Commands, Query, Res}, query::With, event::{EventReader, Event}}, hierarchy::Children, asset::{Handle, Assets}, pbr::StandardMaterial};
+use bevy::{app::{Plugin, Update}, asset::{Assets, Handle}, color::Color, ecs::{event::{Event, EventReader}, query::With, system::{Commands, Query, Res}}, hierarchy::Children, pbr::StandardMaterial};
 
 use hex_tile::HexPlugin;
 
@@ -49,7 +49,7 @@ pub fn update_tile_states(
             for &child in col_ent{
                 if let Ok(handle) = colours.get(child){
                     let current_col = mats.get(handle).unwrap().base_color;
-                    commands.entity(child).insert(ColourTransition::new(current_col, Color::GRAY, 2.0));
+                    commands.entity(child).insert(ColourTransition::new(current_col, Color::linear_rgba(0.5, 0.5, 0.5, 1.0), 2.0));
                 }
             }
         }
@@ -61,7 +61,7 @@ pub fn update_tile_states(
             for &child in col_ent{
                 if let Ok(handle) = colours.get(child){
                     let current_col = mats.get(handle).unwrap().base_color;
-                    commands.entity(child).insert(ColourTransition::new(current_col, Color::GREEN, 2.0));
+                    commands.entity(child).insert(ColourTransition::new(current_col, Color::linear_rgba(0.0, 1.0, 0.0, 1.0), 2.0));
                 }
             }
         }

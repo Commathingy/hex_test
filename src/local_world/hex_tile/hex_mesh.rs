@@ -1,4 +1,4 @@
-use bevy::{render::{mesh::{Mesh, Indices}, render_resource::PrimitiveTopology, color::Color}, asset::{Handle, Assets}, ecs::system::{Resource, ResMut, Commands}, app::{Plugin, PreStartup}};
+use bevy::{app::{Plugin, PreStartup}, asset::{Assets, Handle}, color::LinearRgba, ecs::system::{Commands, ResMut, Resource}, render::{mesh::{Indices, Mesh}, render_asset::RenderAssetUsages, render_resource::PrimitiveTopology}};
 
 use super::hex_materials::OutlineMaterial;
 
@@ -20,7 +20,7 @@ fn create_handles(
     commands.insert_resource(HexagonMeshHandle{
         hex_mesh: meshes.add(create_hex_mesh()),
         outline_mesh: meshes.add(create_outline_mesh()),
-        outline_material: outline_materials.add(OutlineMaterial{outline_colour: Color::WHITE})
+        outline_material: outline_materials.add(OutlineMaterial{outline_colour: LinearRgba::new(1.0, 1.0, 1.0, 1.0)})
     });
 }
 
@@ -33,7 +33,7 @@ pub struct HexagonMeshHandle{
 
 
 fn create_hex_mesh() -> Mesh {
-    Mesh::new(PrimitiveTopology::TriangleList)
+    Mesh::new(PrimitiveTopology::TriangleList, RenderAssetUsages::all())
     .with_inserted_attribute(
         Mesh::ATTRIBUTE_POSITION,
         Vec::from(VERTEX_POSITIONS)
@@ -46,16 +46,16 @@ fn create_hex_mesh() -> Mesh {
         Mesh::ATTRIBUTE_NORMAL,
         Vec::from(VERTEX_NORMALS)
         )
-    .with_indices(Some(Indices::U32(Vec::from(VERTEX_INDICES))))
+    .with_inserted_indices(Indices::U32(Vec::from(VERTEX_INDICES)))
 }
 
 fn create_outline_mesh() -> Mesh {
-    Mesh::new(PrimitiveTopology::LineList)
+    Mesh::new(PrimitiveTopology::LineList, RenderAssetUsages::RENDER_WORLD)
     .with_inserted_attribute(
         Mesh::ATTRIBUTE_POSITION, 
         Vec::from(OUTLINE_POSITIONS)
     )
-    .with_indices(Some(Indices::U32(Vec::from(OUTLINE_INDICES))))
+    .with_inserted_indices(Indices::U32(Vec::from(OUTLINE_INDICES)))
 }
 
 

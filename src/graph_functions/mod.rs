@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use bevy::{ecs::{query::{ReadOnlyWorldQuery, QueryEntityError}, entity::Entity, system::Query, component::Component}, utils::hashbrown::HashSet};
+use bevy::{ecs::{query::{QueryFilter, QueryEntityError}, entity::Entity, system::Query, component::Component}, utils::hashbrown::HashSet};
 
 
 #[derive(Debug)]
@@ -21,7 +21,7 @@ pub trait GraphVertex : Component{
 }
 
 
-pub fn within_steps<V:GraphVertex, T:ReadOnlyWorldQuery>(
+pub fn within_steps<V:GraphVertex, T:QueryFilter>(
     start_ent: Entity,
     max_steps: usize,
     query: &Query<&V, T>

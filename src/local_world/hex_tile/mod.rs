@@ -2,22 +2,19 @@ mod hex_mesh;
 mod hex_materials;
 
 use bevy::{
-    ecs::{schedule::{
+    app::{
+        Plugin, Startup, Update
+    }, asset::Assets, color::Color, ecs::{component::Component, entity::Entity, event::{Event, EventReader, EventWriter}, schedule::{
         apply_deferred, 
         IntoSystemConfigs
-    }, system::{ResMut, Query, Commands, Res, Resource}, event::{EventWriter, EventReader, Event}, entity::Entity, component::Component}, 
-    app::{
-        Plugin,
-        Update, 
-        Startup
-    }, utils::hashbrown::HashMap, hierarchy::BuildChildren, pbr::{MaterialMeshBundle, StandardMaterial}, asset::Assets, prelude::SpatialBundle, math::Vec3, transform::components::Transform, render::color::Color
+    }, system::{Commands, Query, Res, ResMut, Resource}}, hierarchy::BuildChildren, math::Vec3, pbr::{MaterialMeshBundle, StandardMaterial}, prelude::SpatialBundle, transform::components::Transform, utils::hashbrown::HashMap
 };
 
 use bevy_mod_raycast::deferred::RaycastMesh;
 
 use hex_materials::HexMaterialsPlugin;
 
-pub use hex_materials::{ColourTransition, ColourSpace};
+pub use hex_materials::ColourTransition;
 
 use crate::graph_functions::GraphVertex;
 
@@ -76,7 +73,7 @@ fn setup_hexes(
         for j in -4..5{
             writer.send(SpawnHexEvent{
                 position: (i ,j)
-            })
+            });
         }
     }
 }
@@ -119,7 +116,7 @@ fn spawn_hexes(
             par.spawn((
                 MaterialMeshBundle{
                     mesh: handles.hex_mesh.clone(),
-                    material: materials.add(StandardMaterial::from(Color::BLACK)),
+                    material: materials.add(StandardMaterial::from(Color::linear_rgba(0.0, 0.0, 0.0, 1.0))),
                     ..Default::default()
                 },
                 RaycastMesh::<()>::default()
