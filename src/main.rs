@@ -2,10 +2,7 @@ mod local_world;
 mod graph_functions;
 mod camera;
 
-use bevy::{
-    prelude::*,
-    ecs::system::EntityCommand, 
-};
+use bevy::prelude::*;
 use bevy_mod_raycast::deferred::{RaycastSource, DeferredRaycastingPlugin};
 use camera::CameraPlugin;
 use local_world::{LocalWorldPlugin, PlayerMovedEvent, HexTile};
@@ -26,35 +23,6 @@ fn main() {
         .add_systems(Update, test_move)
         .run();
 }
-
-
-
-
-
-
-
-
-struct AddIfMissing<T: Component>{
-    component: T,
-}
-impl<T: Component> EntityCommand for AddIfMissing<T>{
-    fn apply(self, id: Entity, world: &mut World) {
-        match world.get_entity_mut(id){
-            Some(mut ent_ref) => {
-                if !ent_ref.contains::<T>() {
-                    ent_ref.insert(self.component);
-                } else {
-                    return;
-                }
-            },
-            None => return,
-        }
-    }
-}
-
-
-
-
 
 
 
