@@ -1,12 +1,10 @@
-use std::f32::consts::{PI, SQRT_2};
+use std::f32::consts::PI;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 use bevy::math::vec3;
+use bevy::render::camera::{OrthographicProjection, ScalingMode};
 use bevy::{math::Vec3, transform::components::Transform, ecs::{system::{Query, Res, Commands}, query::With, component::Component}, render::camera::Camera, input::{ButtonInput, keyboard::KeyCode}, pbr::{PointLightBundle, PointLight}, time::{Virtual, Time}, core_pipeline::core_3d::Camera3dBundle, app::{Plugin, Startup, Update}};
 use bevy_mod_raycast::deferred::RaycastSource;
-
-
-
 
 pub struct CameraPlugin;
 impl Plugin for CameraPlugin{
@@ -27,17 +25,23 @@ struct CameraFocus{
     pub location: Vec3,
     distance: f32,
     angle: Angle,
+    inclement: Angle,
     rotation_speed: f32
 }
 
 impl CameraFocus{
     fn new(location: Vec3) -> Self {
-        Self {location, distance: 2.0, angle: Angle(0.0), rotation_speed: PI/2.0}
+        Self {location, distance: 20.0, angle: Angle(0.0), inclement: Angle(PI / 8.0), rotation_speed: PI}
     }
 
     fn focus_camera_at(location: Vec3) -> (Camera3dBundle, CameraMarker, Self) {
         (
             Camera3dBundle {
+                projection: OrthographicProjection {
+                    // 6 world units per window height.
+                    scaling_mode: ScalingMode::WindowSize(64.0),
+                    ..Default::default()
+                }.into(),
                 ..Default::default()
             },
             CameraMarker,
@@ -47,8 +51,9 @@ impl CameraFocus{
 
     ///compute the new position of the camera around the focus from its current angle
     fn determine_position(&self) -> Transform {
-        let (new_z, new_x) = self.angle.0.sin_cos();
-        let new_pos = self.location + self.distance * SQRT_2 * vec3(new_x, 0.5, new_z);
+        let (new_y, xz_scale) = self.inclement.0.sin_cos();
+        let (new_z_unscale, new_x_unscale) = self.angle.0.sin_cos();
+        let new_pos = self.location + self.distance * vec3(new_x_unscale * xz_scale, new_y, new_z_unscale * xz_scale);
 
         let mut transform = Transform::from_translation(new_pos);
         transform.look_at(self.location, Vec3::Y);
@@ -111,6 +116,15 @@ fn camera_move(
     }
     if input.pressed(KeyCode::KeyE){
         focus.angle -= Angle(time_pass * rot_speed);
+    }
+    if input.pressed(KeyCode::KeyR){
+        focus.inclement += Angle(time_pass * rot_speed);
+    }
+    if input.pressed(KeyCode::KeyF){
+        focus.inclement -= Angle(time_pass * rot_speed);
+    }
+    if input.pressed(KeyCode::Space){
+        println!("ang: {}, inc: {}", focus.angle.0, focus.inclement.0);
     }
 
     //actually effect the changes

@@ -1,6 +1,7 @@
 mod local_world;
 mod graph_functions;
 mod camera;
+mod character;
 
 use bevy::prelude::*;
 use bevy_mod_raycast::deferred::{RaycastSource, DeferredRaycastingPlugin};
@@ -11,7 +12,7 @@ use local_world::{LocalWorldPlugin, PlayerMovedEvent, HexTile};
 //todo:
 //add sparse set storage for certain components -> anything used for animations ig
 //animation components are never removed
-//for rotating component continuously- one frame gap due to despawn/ spawning -> adjust order of ticking etc 
+//for rotatingw component continuously- one frame gap due to despawn/ spawning -> adjust order of ticking etc 
 
 
 fn main() {

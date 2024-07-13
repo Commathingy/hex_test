@@ -12,12 +12,12 @@ use bevy::{
 
 use bevy_mod_raycast::deferred::RaycastMesh;
 
+use noise::{NoiseFn, OpenSimplex, RidgedMulti};
+
+
 use hex_materials::HexMaterialsPlugin;
-
 pub use hex_materials::ColourTransition;
-
 use crate::graph_functions::GraphVertex;
-
 use self::hex_mesh::{HexMeshPlugin, HexagonMeshHandle, FRAC_1_SQRT_3};
 
 
@@ -69,8 +69,8 @@ fn hex_neighbours(pos: &(i32, i32)) -> Vec<(i32,i32)> {
 fn setup_hexes(
     mut writer: EventWriter<SpawnHexEvent>
 ){
-    for i in -4..5{
-        for j in -4..5{
+    for i in -10..11{
+        for j in -10..11{
             writer.send(SpawnHexEvent{
                 position: (i ,j)
             });
@@ -90,6 +90,8 @@ fn spawn_hexes(
     //added to when we add a vertex that neighbours this one, since we cant add it then
     let mut to_update: HashMap<Entity, Vec<Entity>> = HashMap::new();
 
+    let noise: RidgedMulti<OpenSimplex> = RidgedMulti::new(14068690);
+
     for event in reader.read(){
         let mut neighbours : Vec<Entity> = Vec::new();
         //iterate over the possible neighbours
@@ -104,13 +106,18 @@ fn spawn_hexes(
         let x_pos = event.position.0 as f32 * FRAC_1_SQRT_3 * 1.5;
         let z_pos = event.position.1 as f32 + if event.position.0 % 2 != 0 {0.5} else {0.0};
 
+        let y_pos = noise.get([event.position.0 as f64 / 10.0 + 0.46721, event.position.1 as f64 / 10.0 + 0.46721]) as f32;
+
+
+
+
         let new_id = commands.spawn((
             HexTile{
                 position: event.position,
                 neighbours: neighbours.clone(),
                 explored_state: TileExploredState::Hidden
             },
-            SpatialBundle::from(Transform::from_translation(Vec3::new(x_pos, 0.0, z_pos)))
+            SpatialBundle::from(Transform::from_translation(Vec3::new(x_pos, y_pos, z_pos)))
 
         )).with_children(|par| {
             par.spawn((
@@ -144,6 +151,7 @@ fn spawn_hexes(
 // ========================
 // Types
 // ========================
+
 
 
 #[derive(Resource, Default)]
