@@ -17,7 +17,7 @@ fn create_handles(
     mut meshes: ResMut<Assets<Mesh>>,
     mut outline_materials: ResMut<Assets<OutlineMaterial>>,
 ) {
-    commands.insert_resource(HexagonMeshHandle{
+    commands.insert_resource(HexagonMeshHandles{
         hex_mesh: meshes.add(create_hex_mesh()),
         outline_mesh: meshes.add(create_outline_mesh()),
         outline_material: outline_materials.add(OutlineMaterial{outline_colour: LinearRgba::new(1.0, 1.0, 1.0, 1.0)})
@@ -25,7 +25,7 @@ fn create_handles(
 }
 
 #[derive(Resource)]
-pub struct HexagonMeshHandle{
+pub struct HexagonMeshHandles{
     pub hex_mesh: Handle<Mesh>,
     pub outline_mesh: Handle<Mesh>,
     pub outline_material: Handle<OutlineMaterial>

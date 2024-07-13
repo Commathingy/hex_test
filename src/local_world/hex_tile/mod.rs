@@ -18,7 +18,8 @@ use noise::{NoiseFn, OpenSimplex, RidgedMulti};
 use hex_materials::HexMaterialsPlugin;
 pub use hex_materials::ColourTransition;
 use crate::graph_functions::GraphVertex;
-use self::hex_mesh::{HexMeshPlugin, HexagonMeshHandle, FRAC_1_SQRT_3};
+use self::hex_mesh::{HexMeshPlugin, HexagonMeshHandles};
+pub use self::hex_mesh::FRAC_1_SQRT_3;
 
 
 pub struct HexPlugin;
@@ -30,11 +31,7 @@ impl Plugin for HexPlugin{
         .init_resource::<HexagonsToUpdate>()
         .init_resource::<HexPositionMap>()
         .add_event::<SpawnHexEvent>()
-        .add_systems(Startup, setup_hexes)
-        .add_systems(Update, (spawn_hexes, apply_deferred, apply_neighbour_changes).chain())
-
-
-        ;
+        .add_systems(Startup, (setup_hexes, apply_deferred, spawn_hexes, apply_deferred, apply_neighbour_changes).chain());
     }
 }
 
@@ -83,7 +80,7 @@ fn spawn_hexes(
     mut reader: EventReader<SpawnHexEvent>,
     mut tile_map: ResMut<HexPositionMap>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    handles: Res<HexagonMeshHandle>,
+    handles: Res<HexagonMeshHandles>,
     mut hex_to_update: ResMut<HexagonsToUpdate>
 ) {
     //stores the neighbours that will be added to the entity in a later system

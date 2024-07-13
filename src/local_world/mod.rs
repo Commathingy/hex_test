@@ -1,7 +1,11 @@
 mod hex_tile;
+mod local_camera;
+mod local_character;
 
-use bevy::{app::{Plugin, Update}, asset::{Assets, Handle}, color::Color, ecs::{event::{Event, EventReader}, query::With, system::{Commands, Query, Res}}, hierarchy::Children, pbr::StandardMaterial};
+use bevy::{app::{Plugin, Update}, asset::{Assets, Handle}, color::Color, ecs::{event::{Event, EventReader}, system::{Commands, Query, Res}}, hierarchy::Children, pbr::StandardMaterial, prelude::{Changed, IntoSystemConfigs}};
 
+use local_camera::LocalCameraPlugin;
+use local_character::LocalCharacterPlugin;
 use hex_tile::HexPlugin;
 
 use crate::graph_functions;
@@ -18,7 +22,9 @@ impl Plugin for LocalWorldPlugin{
         app
         .add_event::<PlayerMovedEvent>()
         .add_plugins(HexPlugin)
-        .add_systems(Update, update_tile_states);
+        .add_plugins(LocalCameraPlugin)
+        .add_plugins(LocalCharacterPlugin)
+        .add_systems(Update, (update_tile_states, change_tile_colours.after(update_tile_states)));
     }
 }
 
@@ -27,10 +33,6 @@ impl Plugin for LocalWorldPlugin{
 // ============================
 
 pub fn update_tile_states(
-    mut commands: Commands,
-    col_parent: Query<&Children, With<HexTile>>,
-    colours: Query<&Handle<StandardMaterial>>,
-    mats: Res<Assets<StandardMaterial>>,
     tiles_map: Res<HexPositionMap>,
     mut reader: EventReader<PlayerMovedEvent>,
     mut tiles: Query<&mut HexTile>
@@ -43,30 +45,38 @@ pub fn update_tile_states(
 
         for (ent, _) in left.into_iter(){
             tiles.get_mut(ent).unwrap().explored_state = TileExploredState::Explored;
-
-            //get the current colour of the tile and add transition
-            let col_ent = col_parent.get(ent).unwrap();
-            for &child in col_ent{
-                if let Ok(handle) = colours.get(child){
-                    let current_col = mats.get(handle).unwrap().base_color;
-                    commands.entity(child).insert(ColourTransition::new(current_col, Color::linear_rgba(0.5, 0.5, 0.5, 1.0), 2.0));
-                }
-            }
         }
         for (ent, _) in entered.into_iter(){
             tiles.get_mut(ent).unwrap().explored_state = TileExploredState::Visible;
-
-            //get the current colour of the tile and add transition
-            let col_ent = col_parent.get(ent).unwrap();
-            for &child in col_ent{
-                if let Ok(handle) = colours.get(child){
-                    let current_col = mats.get(handle).unwrap().base_color;
-                    commands.entity(child).insert(ColourTransition::new(current_col, Color::linear_rgba(0.0, 1.0, 0.0, 1.0), 2.0));
-                }
-            }
         }
     }
 }
+
+
+
+fn change_tile_colours(
+    mut commands: Commands,
+    col_parent: Query<(&HexTile, &Children), Changed<HexTile>>,
+    colours: Query<&Handle<StandardMaterial>>,
+    mats: Res<Assets<StandardMaterial>>,
+) {
+    //get the current colour of the tile and add transition
+    for (tile, children) in col_parent.iter(){
+        let new_colour = match tile.explored_state{
+            TileExploredState::Hidden => Color::linear_rgba(0.0, 0.0, 0.0, 1.0),
+            TileExploredState::Explored => Color::linear_rgba(0.5, 0.5, 0.5, 1.0),
+            TileExploredState::Visible => Color::linear_rgba(0.0, 1.0, 0.0, 1.0),
+        };
+        for &child in children{
+            if let Ok(handle) = colours.get(child){
+                let current_col = mats.get(handle).unwrap().base_color;
+                commands.entity(child).insert(ColourTransition::new(current_col, new_colour, 2.0));
+            }
+        }
+    }
+    
+}
+
 
 
 #[derive(Event)]

@@ -1,12 +1,10 @@
 mod local_world;
 mod graph_functions;
-mod camera;
-mod character;
+mod player;
 
 use bevy::prelude::*;
 use bevy_mod_raycast::deferred::{RaycastSource, DeferredRaycastingPlugin};
-use camera::CameraPlugin;
-use local_world::{LocalWorldPlugin, PlayerMovedEvent, HexTile};
+use local_world::{HexTile, LocalWorldPlugin, PlayerMovedEvent};
 
 
 //todo:
@@ -20,7 +18,6 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(DeferredRaycastingPlugin::<()>::default())
         .add_plugins(LocalWorldPlugin)
-        .add_plugins(CameraPlugin)
         .add_systems(Update, test_move)
         .run();
 }

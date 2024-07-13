@@ -6,8 +6,8 @@ use bevy::render::camera::{OrthographicProjection, ScalingMode};
 use bevy::{math::Vec3, transform::components::Transform, ecs::{system::{Query, Res, Commands}, query::With, component::Component}, render::camera::Camera, input::{ButtonInput, keyboard::KeyCode}, pbr::{PointLightBundle, PointLight}, time::{Virtual, Time}, core_pipeline::core_3d::Camera3dBundle, app::{Plugin, Startup, Update}};
 use bevy_mod_raycast::deferred::RaycastSource;
 
-pub struct CameraPlugin;
-impl Plugin for CameraPlugin{
+pub struct LocalCameraPlugin;
+impl Plugin for LocalCameraPlugin{
     fn build(&self, app: &mut bevy::prelude::App) {
         app
         .add_systems(Startup, spawn_camera)
