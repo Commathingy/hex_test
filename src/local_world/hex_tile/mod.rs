@@ -69,7 +69,10 @@ fn apply_neighbour_changes(
     }
 }
 
-fn hex_neighbours(pos: &(i32, i32)) -> Vec<(i32,i32)> {
+pub fn hex_neighbours(pos: &(i32, i32)) -> Vec<(i32,i32)> {
+    // 0 1
+    //2 . 3
+    // 4 5
     const POSSIBLE_NEIGHBOURS : [(i32, i32); 6] = [
         (1, 0), (1, -1), 
         (0, 1), (0, -1), 

@@ -62,7 +62,7 @@ fn change_tile_colours(
     //get the current colour of the tile and add transition
     for (tile, children) in col_parent.iter(){
         let new_colour = match tile.explored_state{
-            TileExploredState::Hidden => Color::linear_rgba(0.0, 0.0, 0.0, 1.0),
+            TileExploredState::Hidden => continue,
             TileExploredState::Explored => Color::linear_rgba(0.5, 0.5, 0.5, 1.0),
             TileExploredState::Visible => Color::linear_rgba(0.0, 1.0, 0.0, 1.0),
         };
