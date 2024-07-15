@@ -13,8 +13,7 @@ use crate::graph_functions;
 use self::hex_tile::{ColourTransition, HexPositionMap, TileExploredState};
 
 
-pub use hex_tile::HexTile; ///////////////////////////
-
+pub use hex_tile::{x_from_coord, z_from_coord, HexTile}; ///////////////////////////
 
 pub struct LocalWorldPlugin;
 impl Plugin for LocalWorldPlugin{
@@ -84,3 +83,5 @@ pub struct PlayerMovedEvent{
     pub from: (i32, i32),
     pub to: (i32, i32)
 }
+
+

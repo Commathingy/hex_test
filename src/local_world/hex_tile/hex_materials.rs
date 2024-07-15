@@ -3,12 +3,14 @@ use std::time::Duration;
 use bevy::{
     app::{Plugin, Update}, asset::{Asset, Assets, Handle}, color::{Color, LinearRgba, Mix}, ecs::{component::Component, system::{Query, Res, ResMut}}, pbr::{
         Material, MaterialPipeline, MaterialPipelineKey, MaterialPlugin, StandardMaterial
-    }, reflect::TypePath, render::{
+    }, prelude::IntoSystemConfigs, reflect::TypePath, render::{
         mesh::MeshVertexBufferLayoutRef, render_resource::{
             AsBindGroup, PolygonMode, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError
         }
-    }, time::{self, Time, Timer, Virtual}
+    }, state::condition::in_state, time::{self, Time, Timer, Virtual}
 };
+
+use crate::GameState;
 
 
 pub struct HexMaterialsPlugin;
@@ -17,7 +19,7 @@ impl Plugin for HexMaterialsPlugin{
     fn build(&self, app: &mut bevy::prelude::App) {
         app
         .add_plugins(MaterialPlugin::<OutlineMaterial>::default())
-        .add_systems(Update, update_colour_transitions);
+        .add_systems(Update, update_colour_transitions.run_if(in_state(GameState::LocalWorld)));
     }
 }
 

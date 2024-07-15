@@ -1,7 +1,8 @@
 use bevy::{app::{Plugin, PreStartup, Startup, Update}, asset::{Assets, Handle}, color::Color, math::vec3, pbr::{MaterialMeshBundle, StandardMaterial}, prelude::{Capsule3d, Commands, Component, EventReader, Query, Res, ResMut, Resource, With}, render::mesh::Mesh, transform::components::Transform};
-use noise::{NoiseFn, OpenSimplex, RidgedMulti};
 
-use super::{hex_tile::FRAC_1_SQRT_3, PlayerMovedEvent};
+use crate::random_gens::HeightmapNoise;
+
+use super::{x_from_coord, z_from_coord, PlayerMovedEvent};
 
 
 
@@ -39,12 +40,11 @@ fn spawn_player(
     char_mesh: Res<CharacterHandles>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    height_noise: Res<HeightmapNoise>
 ) {
-    //todo: this is bad, should go into a resource or component or smth (duped from the terrain height gen code)
-    let noise: RidgedMulti<OpenSimplex> = RidgedMulti::new(14068690);
     let x_pos = 0.0;
     let z_pos = 0.0;
-    let y_pos = noise.get([0.46721, 0.46721]) as f32 + 0.3;
+    let y_pos = height_noise.height_at_xz(0.0, 0.0) as f32 + 0.3;
 
     commands.spawn((MaterialMeshBundle{
         mesh: char_mesh.char_mesh.clone(),
@@ -59,14 +59,14 @@ fn spawn_player(
 
 fn move_character(
     mut reader: EventReader<PlayerMovedEvent>,
-    mut char_q: Query<&mut Transform, With<CharacterMarker>>
+    mut char_q: Query<&mut Transform, With<CharacterMarker>>,
+    height_noise: Res<HeightmapNoise>
 ){
     let mut char_pos = char_q.single_mut();
-    let noise: RidgedMulti<OpenSimplex> = RidgedMulti::new(14068690);
     for event in reader.read(){
-        let x_pos = event.to.0 as f32 * FRAC_1_SQRT_3 * 1.5;
-        let z_pos = event.to.1 as f32 + if event.to.0 % 2 != 0 {0.5} else {0.0};
-        let y_pos = noise.get([event.to.0 as f64 / 10.0 + 0.46721, event.to.1 as f64 / 10.0 + 0.46721]) as f32 + 0.3;
+        let x_pos = x_from_coord(event.to.0, event.to.1);
+        let z_pos = z_from_coord(event.to.0, event.to.1);
+        let y_pos =  height_noise.height_at_xz(x_pos, z_pos) + 0.3;
         char_pos.translation = vec3(x_pos, y_pos, z_pos);
     }
 

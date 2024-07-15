@@ -1,25 +1,32 @@
 mod hex_mesh;
 mod hex_materials;
+mod local_terrain;
 
 use bevy::{
-    app::{
-        Plugin, Startup, Update
-    }, asset::Assets, color::Color, ecs::{component::Component, entity::Entity, event::{Event, EventReader, EventWriter}, schedule::{
-        apply_deferred, 
-        IntoSystemConfigs
-    }, system::{Commands, Query, Res, ResMut, Resource}}, hierarchy::BuildChildren, math::Vec3, pbr::{MaterialMeshBundle, StandardMaterial}, prelude::SpatialBundle, transform::components::Transform, utils::hashbrown::HashMap
+    app::
+        Plugin, 
+        asset::Assets, 
+        color::Color, 
+        ecs::{component::Component, entity::Entity, event::{Event, EventReader, EventWriter}, 
+        schedule::{apply_deferred, IntoSystemConfigs}, 
+        system::{Commands, Query, Res, ResMut, Resource}}, 
+        hierarchy::BuildChildren, math::Vec3, 
+        pbr::{MaterialMeshBundle, StandardMaterial}, 
+        prelude::{SpatialBundle, SystemSet}, 
+        state::state::OnEnter, 
+        transform::components::Transform, 
+        utils::hashbrown::HashMap
 };
 
 use bevy_mod_raycast::deferred::RaycastMesh;
 
-use noise::{NoiseFn, OpenSimplex, RidgedMulti};
-
 
 use hex_materials::HexMaterialsPlugin;
 pub use hex_materials::ColourTransition;
-use crate::graph_functions::GraphVertex;
+use local_terrain::TerrainPlugin;
+use crate::{graph_functions::GraphVertex, GameState};
 use self::hex_mesh::{HexMeshPlugin, HexagonMeshHandles};
-pub use self::hex_mesh::FRAC_1_SQRT_3;
+pub use self::hex_mesh::{x_from_coord, z_from_coord};
 
 
 pub struct HexPlugin;
@@ -28,10 +35,19 @@ impl Plugin for HexPlugin{
         app
         .add_plugins(HexMaterialsPlugin)
         .add_plugins(HexMeshPlugin)
+        .add_plugins(TerrainPlugin)
         .init_resource::<HexagonsToUpdate>()
         .init_resource::<HexPositionMap>()
         .add_event::<SpawnHexEvent>()
-        .add_systems(Startup, (setup_hexes, apply_deferred, spawn_hexes, apply_deferred, apply_neighbour_changes).chain());
+        .add_systems(OnEnter(GameState::LocalWorld), 
+    (
+                setup_hexes, 
+                apply_deferred, 
+                spawn_hexes, 
+                apply_deferred, 
+                apply_neighbour_changes
+            ).chain().in_set(HexSpawnSet)
+        );
     }
 }
 
@@ -87,8 +103,6 @@ fn spawn_hexes(
     //added to when we add a vertex that neighbours this one, since we cant add it then
     let mut to_update: HashMap<Entity, Vec<Entity>> = HashMap::new();
 
-    let noise: RidgedMulti<OpenSimplex> = RidgedMulti::new(14068690);
-
     for event in reader.read(){
         let mut neighbours : Vec<Entity> = Vec::new();
         //iterate over the possible neighbours
@@ -100,10 +114,8 @@ fn spawn_hexes(
             }
         }
 
-        let x_pos = event.position.0 as f32 * FRAC_1_SQRT_3 * 1.5;
-        let z_pos = event.position.1 as f32 + if event.position.0 % 2 != 0 {0.5} else {0.0};
-
-        let y_pos = noise.get([event.position.0 as f64 / 10.0 + 0.46721, event.position.1 as f64 / 10.0 + 0.46721]) as f32;
+        let x_pos = x_from_coord(event.position.0, event.position.1);
+        let z_pos = z_from_coord(event.position.0, event.position.1);
 
 
 
@@ -114,7 +126,7 @@ fn spawn_hexes(
                 neighbours: neighbours.clone(),
                 explored_state: TileExploredState::Hidden
             },
-            SpatialBundle::from(Transform::from_translation(Vec3::new(x_pos, y_pos, z_pos)))
+            SpatialBundle::from(Transform::from_translation(Vec3::new(x_pos, 0.0, z_pos)))
 
         )).with_children(|par| {
             par.spawn((
@@ -148,6 +160,10 @@ fn spawn_hexes(
 // ========================
 // Types
 // ========================
+
+
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct HexSpawnSet;
 
 
 

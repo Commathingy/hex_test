@@ -32,6 +32,15 @@ pub struct HexagonMeshHandles{
 }
 
 
+pub fn x_from_coord(i: i32, _j: i32) -> f32 {
+    i as f32 * FRAC_1_SQRT_3 * 1.5
+}
+
+pub fn z_from_coord(i: i32, j: i32) -> f32 {
+    j as f32 + if i % 2 != 0 {0.5} else {0.0}
+}
+
+
 fn create_hex_mesh() -> Mesh {
     Mesh::new(PrimitiveTopology::TriangleList, RenderAssetUsages::all())
     .with_inserted_attribute(
@@ -59,7 +68,7 @@ fn create_outline_mesh() -> Mesh {
 }
 
 
-pub const FRAC_1_SQRT_3: f32 = 0.577350269189625764509148780501957456_f32;
+const FRAC_1_SQRT_3: f32 = 0.577350269189625764509148780501957456_f32;
 const SQRT_3: f32 = 1.732050807568877293527446341505872367_f32;
 
 const MINOR_RADIUS : f32 = 0.5;
