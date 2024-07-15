@@ -1,3 +1,5 @@
+use std::fs;
+
 use bevy::{app::Plugin, prelude::Resource};
 use noise::{NoiseFn, OpenSimplex, RidgedMulti};
 
@@ -9,7 +11,9 @@ use crate::local_world::{x_from_coord, z_from_coord};
 pub struct RandomPlugin;
 impl Plugin for RandomPlugin{
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.insert_resource(HeightmapNoise(RidgedMulti::new(14068690)));
+        let seed = fs::read_to_string("./assets/seed.txt").expect("Unable to read file")
+        .parse().expect("Failed to parse seed");
+        app.insert_resource(HeightmapNoise(RidgedMulti::new(seed)));
     }
 }
 
