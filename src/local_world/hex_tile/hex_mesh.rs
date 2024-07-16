@@ -20,7 +20,7 @@ fn create_handles(
     commands.insert_resource(HexagonMeshHandles{
         hex_mesh: meshes.add(create_hex_mesh()),
         outline_mesh: meshes.add(create_outline_mesh()),
-        outline_material: outline_materials.add(OutlineMaterial{outline_colour: LinearRgba::new(1.0, 1.0, 1.0, 1.0)})
+        outline_material: outline_materials.add(OutlineMaterial{outline_colour: LinearRgba::new(1.0, 1.0, 1.0, 0.2)})
     });
 }
 

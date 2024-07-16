@@ -100,16 +100,16 @@ fn camera_move(
     let rot_speed = focus.rotation_speed;
 
     if input.pressed(KeyCode::KeyW){
-        focus.location += time_pass * forward;
+        focus.location += 4.0 * time_pass * forward;
     }
     if input.pressed(KeyCode::KeyS){
-        focus.location += -time_pass * forward;
+        focus.location += -4.0 * time_pass * forward;
     }
     if input.pressed(KeyCode::KeyA){
-        focus.location += time_pass * left;
+        focus.location += 4.0 * time_pass * left;
     }
     if input.pressed(KeyCode::KeyD){
-        focus.location += -time_pass * left;
+        focus.location += -4.0 * time_pass * left;
     }
     if input.pressed(KeyCode::KeyQ){
         focus.angle += Angle(time_pass * rot_speed);

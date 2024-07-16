@@ -90,6 +90,11 @@ pub struct OutlineMaterial{
 }
 
 impl Material for OutlineMaterial{
+
+    fn alpha_mode(&self) -> bevy::prelude::AlphaMode {
+        bevy::render::alpha::AlphaMode::Blend
+    }
+
     fn fragment_shader() -> ShaderRef{
         "shaders/outline_material.wgsl".into()
     }
