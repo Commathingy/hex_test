@@ -50,8 +50,12 @@ fn determine_biomes(
 
         mat.base_color = match self_height {
             height if height > 0.5 && higher_than > 3 => Color::linear_rgba(0.3, 0.3, 0.3, 1.0),
+            height if height > 0.5 && higher_than == 0 => Color::linear_rgba(1.0, 1.0, 1.0, 1.0),
             height if height > 0.5 => Color::linear_rgba(0.5, 0.5, 0.5, 1.0),
-            height if height < 0.2 => Color::linear_rgba(0.5, 0.75, 0.1, 1.0),
+            height if height > 0.2 => Color::linear_rgba(0.0, 0.5, 0.0, 1.0),
+            height if height > -0.2 && higher_than == 0 => Color::linear_rgba(0.0, 0.0, 1.0, 1.0),
+            height if height > -0.2 => Color::linear_rgba(0.5, 0.75, 0.1, 1.0),
+            height if height <= -0.2 => Color::linear_rgba(0.5, 0.8, 1.0, 1.0),
             _ => Color::linear_rgba(1.0, 0.0, 1.0, 1.0)
         }.into();
         

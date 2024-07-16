@@ -87,7 +87,7 @@ fn setup_hexes(
 ){
 
     //For a hexagonal grid with radius of hex_size
-    let hex_size: i32 = 10;
+    let hex_size: i32 = 25;
     for i in -hex_size..=hex_size {
         let min_j = (i.abs() / 2) - hex_size;
         let max_j = hex_size - ((i.abs() + 1) / 2);
