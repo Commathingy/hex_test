@@ -85,6 +85,21 @@ pub fn hex_neighbours(pos: &(i32, i32)) -> Vec<(i32,i32)> {
 fn setup_hexes(
     mut writer: EventWriter<SpawnHexEvent>
 ){
+
+    //For a hexagonal grid with radius of hex_size
+    let hex_size: i32 = 10;
+    for i in -hex_size..=hex_size {
+        let min_j = (i.abs() / 2) - hex_size;
+        let max_j = hex_size - ((i.abs() + 1) / 2);
+        for j in min_j..=max_j{
+            writer.send(SpawnHexEvent{
+                position: (i ,j)
+            });
+        }
+    }
+
+
+    /* //For a simple rectangular grid
     for i in -10..11{
         for j in -10..11{
             writer.send(SpawnHexEvent{
@@ -92,6 +107,7 @@ fn setup_hexes(
             });
         }
     }
+    */
 }
 
 fn spawn_hexes(

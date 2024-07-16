@@ -32,6 +32,9 @@ pub struct HexagonMeshHandles{
 }
 
 
+/// We assume a hexagonal grid with hexagons with flat sides on top and bottom
+/// This results in the lines of constant i looking zig-zaggy
+/// and lines of constant j to be straight
 pub fn x_from_coord(i: i32, _j: i32) -> f32 {
     i as f32 * FRAC_1_SQRT_3 * 1.5
 }
